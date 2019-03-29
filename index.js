@@ -2,7 +2,6 @@ const express = require('express')
 const bodyParser  = require('body-parser')
 const axios = require('axios')
 const fs = require('fs')
-const router = express.Router()
 const app = express()
 const key = 'dlkd75sdfh45fdfdkjfk0465'
 
@@ -56,30 +55,32 @@ let yt = new Youtube()
 yt.check()
 yt.main()
 
+const port = process.env.PORT || 8080;
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')   
+  next()
+})
 
-const port = process.env.PORT || 8080;
 
-router.route('/youtube/lastvideo')
-  .get(function (req, res) {
-    if (req.body.token == key) {
-      let data = yt.getData()
-      if (data === null || !data) {
-        let filename = yt.getFileName()
-        let rawdata = fs.readFileSync(filename)
-        data = JSON.parse(rawdata)        
-      }
-      res.send(data)
-    } else {
-      res.send(null)
+app.get('/api/youtube/lastvideo', function(req, res, next) {
+  if (req.body.token == key) {
+    let data = yt.getData()
+    if (data === null || !data) {
+      let filename = yt.getFileName()
+      let rawdata = fs.readFileSync(filename)
+      data = JSON.parse(rawdata)        
     }
-  })
-  
+    res.send(data)
+  } else {
+    res.send(null)
+  }
+})
 
-
-app.use('/api', router)
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
