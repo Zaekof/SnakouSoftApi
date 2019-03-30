@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser  = require('body-parser')
 const axios = require('axios')
 const fs = require('fs')
+const cors = require('cors')
 const app = express()
 const key = 'dlkd75sdfh45fdfdkjfk0465'
 
@@ -49,13 +50,66 @@ Youtube = function() {
   this.getData= function () {return this.data}
   this.getFileName= function () {return this.filename}
 }
+Twitch = function() {
+  this.link = 'https://api.twitch.tv/helix/streams?user_login=gius'
+  this.inter = null
+  this.status = null
 
+  this.main = function () {
+    let _this = this
+    this.inter = setInterval(function () {
+      _this.check()
+    }, 60000)
+  }
+  this.check = function () {
+    try {
+      let _this = this
+      axios.get(this.link, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type' : 'application/x-www-form-urlencoded',
+          'Authorization': 'Bearer hp76k3sz5lnpo49dui81eu0rtcagbh',
+          'Client-ID': 'ewo3urn3cdqhu96a9gokcwppl17le5'
+        },
+      })
+      .then(function (response) {
+        if (response.data.data.length > 0) {
+          _this.status = true 
+        }
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error)
+        _this.status = false
+      })
+      .then(function () {
+        // always executed
+      })
+    } catch (error) {
+      _this.status = false
+      console.log(error)
+      clearInterval(_this.inter)
+      _this.main()
+    }
+  }
+
+  this.getStatus = function () {return this.status}
+}
 let yt = new Youtube()
+let tw = new Twitch()
 
 yt.check()
 yt.main()
 
-const port = process.env.PORT || 8080;
+tw.check()
+tw.main()
+
+const port = process.env.PORT || 80;
+
+let corsOptions = {
+  origin: 'http://localhost:9080',
+  optionsSuccessStatus: 200
+}
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
@@ -67,15 +121,25 @@ app.use(function(req, res, next) {
   next()
 })
 
+app.options('/api/youtube/lastvideo', cors())
+app.options('/api/twitch/status', cors())
 
-app.get('/api/youtube/lastvideo', function(req, res, next) {
-  if (req.body.token == key) {
+app.get('/api/youtube/lastvideo', cors(corsOptions), function(req, res, next) {
+  if (req.headers.token == key) {
     let data = yt.getData()
     if (data === null || !data) {
       let filename = yt.getFileName()
       let rawdata = fs.readFileSync(filename)
       data = JSON.parse(rawdata)        
     }
+    res.send(data)
+  } else {
+    res.send(null)
+  }
+})
+app.get('/api/twitch/status', cors(corsOptions), function(req, res, next) {
+  if (req.headers.token == key) {
+    let data = tw.getStatus()
     res.send(data)
   } else {
     res.send(null)
