@@ -51,7 +51,7 @@ Youtube = function() {
   this.getFileName= function () {return this.filename}
 }
 Twitch = function() {
-  this.link = 'https://api.twitch.tv/helix/streams?user_login=gius'
+  this.link = 'https://api.twitch.tv/helix/streams?user_login=mastersnakou'
   this.inter = null
   this.status = null
 
@@ -75,7 +75,9 @@ Twitch = function() {
       .then(function (response) {
         if (response.data.data.length > 0) {
           _this.status = true 
-        }
+        } else {
+	  _this.status = false
+	}
       })
       .catch(function (error) {
         // handle error
@@ -104,7 +106,7 @@ yt.main()
 tw.check()
 tw.main()
 
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 8080;
 
 let corsOptions = {
   origin: 'http://localhost:9080',
