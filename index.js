@@ -1,13 +1,13 @@
-const express = require('express')
-const bodyParser  = require('body-parser')
-const axios = require('axios')
-const fs = require('fs')
-const cors = require('cors')
-const app = express()
+let express = require('express')
+let bodyParser = require('body-parser')
+let axios = require('axios')
+let fs = require('fs')
+let cors = require('cors')
+let app = express()
 const key = 'dlkd75sdfh45fdfdkjfk0465'
 
 Youtube = function() {
-  this.link = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=12&playlistId=UUOhP0t6arWMXqmcroJjMJ7A&key=AIzaSyCEBAOKZyqFEsauVZWIJY07CdTv6-WdFdk'
+  this.link = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=10&playlistId=UUOhP0t6arWMXqmcroJjMJ7A&key=AIzaSyCEBAOKZyqFEsauVZWIJY07CdTv6-WdFdk'
   this.data = null
   this.inter = null
   this.filename = 'youtube.json'
@@ -32,16 +32,19 @@ Youtube = function() {
       .catch(function (error) {
         // handle error
         console.log(error)
+        clearInterval(_this.inter)
+        setTimeout(function () {
+          _this.main()
+        }, 60000)
         let rawdata = fs.readFileSync(_this.filename)
         _this.data = JSON.parse(rawdata)
-      })
-      .then(function () {
-        // always executed
       })
     } catch (error) {
       console.log(error)
       clearInterval(_this.inter)
-      _this.main()
+      setTimeout(function () {
+        _this.main()
+      }, 60000)
     }
   }
 
@@ -73,25 +76,28 @@ Twitch = function() {
         },
       })
       .then(function (response) {
-        if (response.data.data.length > 0) {
-          _this.status = true 
+        if (typeof(response.data) !== typeof(undefined)) {
+                if (response.data.data.length > 0) {
+                    _this.status = true 
+                }
         } else {
-	  _this.status = false
-	}
+          _this.status = false
+        }
       })
       .catch(function (error) {
         // handle error
         console.log(error)
-        _this.status = false
-      })
-      .then(function () {
-        // always executed
+        clearInterval(_this.inter)
+        setTimeout(function () {
+          _this.main()
+        }, 60000)
       })
     } catch (error) {
-      _this.status = false
       console.log(error)
       clearInterval(_this.inter)
-      _this.main()
+      setTimeout(function () {
+        _this.main()
+      }, 60000)
     }
   }
 
