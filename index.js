@@ -77,9 +77,9 @@ Twitch = function() {
       })
       .then(function (response) {
         if (typeof(response.data) !== typeof(undefined)) {
-                if (response.data.data.length > 0) {
-                    _this.status = true 
-                }
+          if (response.data.data.length > 0) {
+            _this.status = true 
+          }
         } else {
           _this.status = false
         }
@@ -151,6 +151,21 @@ app.get('/api/twitch/status', cors(corsOptions), function(req, res, next) {
     res.send(data)
   } else {
     res.send(null)
+  }
+})
+
+app.use(function(err, req, res, next){
+  if(err.status && err.status < 500) {
+    return res.status(400).send('Request Aborted')
+  }
+
+  console.log('Type of Error:', typeof err)
+  console.log('Error: ', err.stack)
+
+  if(req.xhr) {
+    res.partial('500', { error: err })
+  } else {
+    res.render('500', { error: err })
   }
 })
 
